@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-service  # 3 - Nom du service pour la base de données
+spec:
+  selector:
+    app: database  # 3 - Sélectionne les pods avec le label "app: database"
+  ports:
+    - protocol: TCP
+      port: 3306  # 3 - Port exposé pour le service de base de données (utilisé par l'application backend)
+      targetPort: 3306  # 3 - Redirige le port du service vers le port de la base de données
+  type: ClusterIP  # 10 - Le service est de type ClusterIP, donc accessible uniquement à l'intérieur du cluster

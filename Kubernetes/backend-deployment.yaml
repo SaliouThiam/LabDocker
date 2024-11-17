@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment  # 3 - Nom du déploiement pour l'application Flask
+spec:
+  replicas: 3  # 8 - Ajout des 2 réplicas (total de 3)
+  selector:
+    matchLabels:
+      app: backend  # 3 - Sélectionne les pods avec le label "app: backend"
+  template:
+    metadata:
+      labels:
+        app: backend  # 3 - Label pour les pods backend
+    spec:
+      initContainers:  # 9. Ajout de busybox pour vérifier la disponibilité de la base de données
+        - name: wait-for-db
+          image: busybox
+          command:
+            - /bin/sh
+            - -c
+            - "until (echo > /dev/tcp/database-service/3306) 2>/dev/null; do echo 'Waiting for database'; sleep 5; done;"
+      containers:
+        - name: backend  # 3 - Nom du conteneur
+          image: projetdocker-api:latest  
+          ports:
+            - containerPort: 5000  # 11 - Exposition du port 5000
+          env:
+            - name: DATABASE_URL  # 3 - Variable d'environnement pour l'URL de la base de données
+              value: "sqlite3://database-service:database.db"  # 3 - Connexion à la base de données (nom de service de la base)
+          resources:  # 7 - Définir les ressources
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          livenessProbe:  # 6 - Probe de liveness
+            httpGet:
+              path: /health/live
+              port: 5000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          readinessProbe:  # 6 - Probe de readiness
+            httpGet:
+              path: /health/ready
+              port: 5000
+            initialDelaySeconds: 3
+            periodSeconds: 5

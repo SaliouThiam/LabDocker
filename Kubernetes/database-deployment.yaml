@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-deployment  # Nom du déploiement de la base de données
+spec:
+  replicas: 1  # Un seul réplicat pour la base de données SQLite
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database  # Label pour associer le pod au service
+    spec:
+      containers:
+        - name: sqlite3  # Conteneur exécutant SQLite
+          image: keinos/sqlite3:latest  # Image de la base de données SQLite
+          volumeMounts:
+            - name: sqlite-data  # Monte un volume pour stocker les données
+              mountPath: /data  # Chemin dans le conteneur pour le volume
+      volumes:
+        - name: sqlite-data  # Définition du volume de données
+          hostPath:
+            path: /data  # Chemin sur l'hôte pour stocker les données
+            type: Directory  # Type du volume
